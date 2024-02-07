@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:customer-accounts-api="http://www.mulesoft.org/schema/mule/customer-accounts-api" xmlns:accounts-api="http://www.mulesoft.org/schema/mule/accounts-api"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:vm="http://www.mulesoft.org/schema/mule/vm" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/accounts-api http://www.mulesoft.org/schema/mule/accounts-api/current/mule-accounts-api.xsd
+http://www.mulesoft.org/schema/mule/customer-accounts-api http://www.mulesoft.org/schema/mule/customer-accounts-api/current/mule-customer-accounts-api.xsd">
+	<sub-flow name="setUserId" doc:id="c2a5a57a-b242-45d2-a4bf-af704133edc7" >
+		<set-variable value="#[message.attributes.headers.user_id]" doc:name="userId" doc:id="09dd89a8-cd6a-4c0c-b1c2-273c06589438" variableName="userId"/>
+	</sub-flow>
+	<flow name="diy_customer_account_part2_module1Flow" doc:id="32f0996e-f8c5-4c55-9da0-ee413895eebd" >
+		<http:listener doc:name="POST/Customer" doc:id="fd4e5e9d-3163-4e62-b5af-6907cd9c59af" config-ref="HTTP_Listener_config1" allowedMethods="POST" path="/accountInsert"/>
+		<flow-ref doc:name="setUserId" doc:id="fc99d4c2-be76-42c2-8413-dc80650054b8" name="setUserId"/>
+		<vm:publish queueName="readQueue" doc:id="a4f50239-cbfd-407e-8fce-afc6b9b964b7" doc:name="inputQueue" config-ref="VM_Config" sendCorrelationId="ALWAYS">
+			<vm:content ><![CDATA[#[output application/json
+---
+{
+	user_id: vars.userId,
+	accounts: payload
+}]]]></vm:content>
+		</vm:publish>
+		<ee:transform doc:name="Transform Message" doc:id="047df73b-7bd4-49fa-b67b-1be73510cd10" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"Accounts submitted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="d6b2f234-b8ec-43b8-bfbb-1cdaffba30f9" />
+	</flow>
+	<flow name="diy_customer_account_part2_module1Flow1" doc:id="1342fb44-2ab1-4059-b221-b6fa42ebdfd3" >
+		<vm:listener queueName="readQueue" doc:name="readQueue" doc:id="8729d24f-c14f-48b0-bf64-243598cff58d" config-ref="VM_Config">
+			<vm:response >
+				<vm:content ><![CDATA[#[payload.accounts]]]></vm:content>
+			</vm:response>
+		</vm:listener>
+		<flow-ref doc:name="setUserId" doc:id="17443ec8-f03f-415f-ae90-d78b9054a864" name="setUserId"/>
+		<accounts-api:create-account doc:name="Create account" doc:id="13c3414b-4d03-46cd-a5e1-4414c9cc4e1d" config-ref="Accounts_API_Config" user-id="#[vars.userId]" client-id="${account.client_id}" client-secret="${account.client_secret}">
+			<accounts-api:create-account-request-data><![CDATA[#[payload.accounts]]]></accounts-api:create-account-request-data>
+		</accounts-api:create-account>
+		<logger level="INFO" doc:name="Logger" doc:id="accab9c7-928a-4887-9bc4-43ace6d09740" />
+	</flow>
+</mule>

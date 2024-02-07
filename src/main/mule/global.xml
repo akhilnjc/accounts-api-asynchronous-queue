@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:accounts-api="http://www.mulesoft.org/schema/mule/accounts-api" xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:customer-accounts-api="http://www.mulesoft.org/schema/mule/customer-accounts-api" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/customer-accounts-api http://www.mulesoft.org/schema/mule/customer-accounts-api/current/mule-customer-accounts-api.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.mulesoft.org/schema/mule/accounts-api http://www.mulesoft.org/schema/mule/accounts-api/current/mule-accounts-api.xsd">
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="c2b5e739-a3f6-4c9d-ae55-74ce62528494" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<vm:config name="VM_Config" doc:name="VM Config" doc:id="2665aa93-b297-4fa2-bf17-6d47b7c26467" >
+		<vm:connection />
+		<vm:queues >
+			<vm:queue queueName="readQueue" />
+		</vm:queues>
+	</vm:config>
+	<configuration-properties doc:name="Configuration properties" doc:id="49b13d13-0c38-424d-b0cd-780168ade735" file="config.yaml" />
+	<accounts-api:config name="Accounts_API_Config" doc:name="Accounts API Config" doc:id="ee40bd66-b01c-430b-83c8-8a2ac3c56add" property_host="${account.host}" property_port="${account.port}" property_protocol="${account.protocol}" />
+</mule>
